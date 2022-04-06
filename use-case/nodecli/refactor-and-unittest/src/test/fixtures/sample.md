@@ -1,4 +1,7 @@
-これはサンプルです。
-https://asciidwango.github.io/js-primer/
+# サンプルファイル
 
-<p>これはHTMLです</p>
+これはサンプルです。
+https://jsprimer.net/
+
+- サンプル1
+- サンプル2

@@ -22,10 +22,10 @@ export class App {
                 const todoItemElement = element`<li>${item.title}</li>`;
                 todoListElement.appendChild(todoItemElement);
             });
-            // containerElementの中身をtodoListElementで上書きする
+            // コンテナ要素の中身をTodoリストをまとめるList要素で上書きする
             render(todoListElement, containerElement);
             // アイテム数の表示を更新
-            todoItemCountElement.textContent = `Todoアイテム数: ${this.todoListModel.totalCount}`;
+            todoItemCountElement.textContent = `Todoアイテム数: ${this.todoListModel.getTotalCount()}`;
         });
         // 3. フォームを送信したら、新しいTodoItemModelを追加する
         formElement.addEventListener("submit", (event) => {
