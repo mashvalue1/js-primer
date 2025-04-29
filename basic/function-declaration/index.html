@@ -6,7 +6,7 @@
         <title>関数と宣言 · JavaScript Primer #jsprimer</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="JavaScriptの関数を定義する方法について紹介します。関数やメソッドを定義する方法として関数宣言、関数式、Arrow Functionについて紹介します。また関数の引数の扱い方や関数とメソッドの違いについても紹介します。">
-        <meta name="generator" content="HonKit 3.7.1">
+        <meta name="generator" content="HonKit 6.0.2">
         
         
         
@@ -24,11 +24,11 @@
                 
             
                 
-                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-highlight/website.css">
+                <link rel="stylesheet" href="../../gitbook/@honkit/honkit-plugin-highlight/website.css">
                 
             
                 
-                <link rel="stylesheet" href="../../gitbook/gitbook-plugin-fontsettings/website.css">
+                <link rel="stylesheet" href="../../gitbook/@honkit/honkit-plugin-fontsettings/website.css">
                 
             
         
@@ -69,7 +69,73 @@
 
     <link rel="canonical" href="https://jsprimer.net/basic/function-declaration/">
 
-<meta name="google-site-verification" content="bMotEbgYwkzA3k4PkuyK_NUdz0bKh-Phz0oUwNmRSVo" />
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-DWY0DLHWB6"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+        dataLayer.push(arguments);
+    }
+
+    gtag("js", new Date());
+
+    gtag("config", "G-DWY0DLHWB6");
+</script>
+<script type="module">
+    // コンソールUIでコード実行したらイベントとして送信する
+    const onExecuteCode = (scriptType) => {
+        gtag("event", "execute_code", {
+            "event_category": "console",
+            "event_label": "execute_code",
+            "script_type": scriptType || "unknown"
+        });
+    };
+    let observer;
+    const observeEvalEvent = () => {
+        if (observer) {
+            observer.disconnect();
+        }
+        const callback = function(mutationsList) {
+            for (const mutation of mutationsList) {
+                const mirrorConsole = Array.from(mutation.addedNodes).find(node => Boolean(node.dataset.mirrorConsole));
+                if (mirrorConsole) {
+                    return onExecuteCode(mirrorConsole.dataset.mirrorConsole);
+                }
+            }
+        };
+        observer = new MutationObserver(callback);
+        observer.observe(document.body, { childList: true });
+    };
+    const eventMap = new WeakMap();
+    // 問題を報告ボタンを押したらイベントとして送信する
+    const onClickIssueReport = () => {
+        console.log("click_issue_report");
+        gtag("event", "click_issue_report", {
+            "event_category": "contribution",
+            "event_label": "click_issue_report"
+        });
+    };
+    const observeIssueReport = () => {
+        const targetButton = document.querySelector(".gitbook-plugin-github-issue-feedback");
+        // すでにイベントが登録されていたら何もしない
+        if (eventMap.has(targetButton)) {
+            return;
+        }
+        if (targetButton) {
+            targetButton.addEventListener("click", onClickIssueReport);
+            eventMap.set(targetButton, onClickIssueReport);
+        }
+    };
+    window.addEventListener("DOMContentLoaded", function() {
+        gitbook.events.on("page.change", function() {
+            observeEvalEvent();
+            observeIssueReport();
+        });
+    });
+
+</script>
+<meta name="google-site-verification" content="bMotEbgYwkzA3k4PkuyK_NUdz0bKh-Phz0oUwNmRSVo"/>
 <style>
     /*
      * Disable antialias
@@ -84,7 +150,7 @@
     }
 
     /* deny access chapter */
-    .summary li.chapter>span {
+    .summary li.chapter > span {
         cursor: not-allowed;
         opacity: .3;
     }
@@ -109,12 +175,21 @@
         line-height: inherit;
         margin-bottom: 0px !important;
     }
+
     /* Markdown */
-    .markdown-section sup, .markdown-section sub {
+    /* Support horizon scroll */
+    /* https://stackoverflow.com/questions/17770257/scrolling-tables-horizontally-without-wrapping-them-in-div */
+    .markdown-section table {
+        max-width: 100%;
+        overflow-x: auto;
+        display: block;
+    }
+    .markdown-section sup,
+    .markdown-section sub {
         font-size: 75%;
     }
 
-    .book_footer{
+    .book_footer {
         text-align: center;
         color: #000000;
         background: #ddd;
@@ -149,27 +224,33 @@
     .navigation {
         min-width: 50px;
     }
+
+    @media (min-width: 1240px) {
+        .honkit-plugin-sandpack {
+            width: calc(100% + 180px);
+            margin: 0 0 1em -90px;
+        }
+    }
+
+    .honkit-plugin-sandpack, .honkit-plugin-sandpack--buttonContainer {
+        margin-bottom: 1em;
+    }
+
 </style>
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="../../manifest.json">
-<script>
-    if ("serviceWorker" in navigator) {
-        const isLocalhost = Boolean(
-            // preview
-            /netlify.com/.test(window.location.hostname) ||
-            // local
-            window.location.hostname === "localhost" ||
-            // [::1] is the IPv6 localhost address.
-            window.location.hostname === "[::1]" ||
-            // 127.0.0.1/8 is considered localhost for IPv4.
-            window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
-        );
-        if (!isLocalhost) {
-            window.addEventListener("load", () => {
-                navigator.serviceWorker.register("../../sw.js");
-            });
+<script defer async>
+    // unregister old service worker(remove workbox)
+    // https://github.com/asciidwango/js-primer/pull/1701
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for (const registration of registrations) {
+            registration.unregister();
         }
-    }
+    }).catch(function(err) {
+        console.error(new Error("Can not getRegistrations", {
+            cause: err
+        }));
+    });
 </script>
 
     </head>
@@ -234,7 +315,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.2.2" data-path="../../intro/preparation/">
+        <li class="chapter " data-level="1.2.2" data-path="../../intro/sponsors/">
+            
+                <a href="../../intro/sponsors/">
+            
+                    
+                    JavaScript Primerスポンサー
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="../../intro/preparation/">
             
                 <a href="../../intro/preparation/">
             
@@ -247,7 +341,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.2.3" data-path="../../intro/feedback/">
+        <li class="chapter " data-level="1.2.4" data-path="../../intro/feedback/">
             
                 <a href="../../intro/feedback/">
             
@@ -557,7 +651,7 @@
                 <a href="../async/">
             
                     
-                    非同期処理:コールバック/Promise/Async Function
+                    非同期処理:Promise/Async Function
             
                 </a>
             
@@ -1005,14 +1099,21 @@
     <div class="book-body">
         
             <div class="body-inner">
-                 
+                
                     
 
 <!-- Header -->
-<meta name="keywords" content="JavaScript,入門,入門書,チュートリアル,書籍,本,無料,Node.js,ブラウザ"/>
+<meta name="keywords" content="JavaScript,ECMAScript,JS,入門,チュートリアル,書籍,本,無料,Node.js,ブラウザ"/>
 <link rel="author" href="https://www.hatena.ne.jp/efcl/"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css"/>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.js"></script>
+<!-- OGP -->
+<meta property="og:title" content="JavaScript Primer - 迷わないための入門書"/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://jsprimer.net/"/>
+<meta property="og:image" content="https://jsprimer.net/landing/img/cover-optimized.jpg"/>
+<meta property="og:site_name" content="JavaScript Primer"/>
+<meta property="og:description" content="JavaScript Primerは、JavaScriptの基礎から応用までを一貫して学べる入門書です。"/>
 <style>
     .book-header {
         display: flex;
@@ -1390,8 +1491,8 @@
     </div>
     <div class="header-right">
         <!-- Icon: https://www.iconfinder.com/iconsets/circle-payment -->
-        <a class="amazon-link" title="Amazon: JavaScript Primer 迷わないための入門書"
-           href="https://www.amazon.co.jp/dp/4048930737/" target="_blank"><img
+        <a class="amazon-link" title="Amazon: JavaScript Primer 改訂2版 迷わないための入門書"
+           href="https://www.amazon.co.jp/dp/4048931105/" target="_blank"><img
                 width="22"
                 height="22"
                 style="margin: 1px;"
@@ -1402,12 +1503,12 @@
     </div>
 </div>
 
-<script type="text/javascript">
+<script defer>
+    // focus on search box
     document.querySelector(".searchbox [type=\"reset\"]").addEventListener("click", function() {
         this.parentNode.querySelector("input").focus();
     });
-</script>
-<script>
+    // init DocSearch
     var search = docsearch({
         apiKey: "fd28ebaba94be0c39fb9fa1b2fed4f23", // use a SEARCH-ONLY api key here
         indexName: "asciidwango",
@@ -1416,17 +1517,9 @@
     });
 </script>
 <script>
-    window.addEventListener("DOMContentLoaded", function () {
-        gitbook.events.on("page.change", function () {
-            setTimeout(() => console.clear(), 1000);
-        });
-    });
-</script>
-<script type="text/javascript">
-    (function(){var t,e,n,r,a;for(t=function(){var t;return t=[],function(){var e,n,r,a;for(n=["init","start","stop","user","track","action","event","goal","chat","buy","page","view","admin","group","alias","ready","link","form","click","submit","cmd","emit","on","send","css","js","style","option","get","set","collection"],e=function(e){return function(){return t.push([e].concat(Array.prototype.slice.call(arguments,0)))}},r=0,a=[];r<n.length;)t[n[r]]=e(n[r]),a.push(r++);return a}(),t.init=function(e,n){var r,a;return t.api_key=e,t.options=n||{},a=document.createElement("script"),a.type="text/javascript",a.async=!0,a.charset="utf-8",a.src=t.options.tracker_url||"https://static.karte.io/libs/tracker.js",r=document.getElementsByTagName("script")[0],r.parentNode.insertBefore(a,r)},t},r=window.karte_tracker_names||["tracker"],e=0,n=r.length;n>e;e++)a=r[e],window[a]||(window[a]=t());tracker.init("a2d22604ec1d1c6d9d53d9d3eb87961d", { spa_mode: { reset_past_actions: true, close_actions: true }})}).call(this);
-    window.addEventListener("DOMContentLoaded", function(){
+    window.addEventListener("DOMContentLoaded", function() {
         gitbook.events.on("page.change", function() {
-            tracker.view();
+            setTimeout(() => console.clear(), 1000);
         });
     });
 </script>
@@ -1440,7 +1533,34 @@
                             
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="function-and-declaration"><a name="function-and-declaration" class="plugin-anchor" href="#function-and-declaration"><i class="fa fa-link" aria-hidden="true"></i></a>関数と宣言 </h1>
+<style>
+    .page-sponsors {
+        background: #fafafa;
+    }
+    .page-sponsors .page-sponsors-list {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        padding: 1em 0;
+        list-style: none;
+        gap: 8px;
+    }
+    .page-sponsors-footer {
+        text-align: center;
+        padding: 0;
+        margin: 0;
+    }
+</style>
+<div class="page-sponsors">
+
+    <div class="page-sponsors-footer">
+        JavaScript Primerの<a href="https://jsprimer.net/intro/sponsors/">スポンサーを募集中</a>
+    </div>
+
+</div>
+
+                                <html><head></head><body><h1 id="function-and-declaration"><a name="function-and-declaration" class="plugin-anchor" href="#function-and-declaration"><i class="fa fa-link" aria-hidden="true"></i></a>関数と宣言 </h1>
 <p>関数とは、ある一連の手続き（文の集まり）を1つの処理としてまとめる機能です。
 関数を利用することで、同じ処理を毎回書くのではなく、一度定義した関数を呼び出すことで同じ処理を実行できます。</p>
 <p>これまで利用してきたコンソール表示をするConsole APIも関数です。
@@ -1451,14 +1571,14 @@
 <code>function</code>からはじまる文は<strong>関数宣言</strong>と呼び、次のように関数を定義できます。</p>
 <!-- doctest:disable -->
 <pre><code class="lang-js"><span class="hljs-comment">// 関数宣言</span>
-<span class="hljs-function"><span class="hljs-keyword">function</span> 関数名(<span class="hljs-params">仮引数<span class="hljs-number">1</span>, 仮引数<span class="hljs-number">2</span></span>) </span>{
+<span class="hljs-keyword">function</span> 関数名(仮引数<span class="hljs-number">1</span>, 仮引数<span class="hljs-number">2</span>) {
     <span class="hljs-comment">// 関数が呼び出されたときの処理</span>
     <span class="hljs-comment">// ...</span>
     <span class="hljs-keyword">return</span> 関数の返り値;
 }
 <span class="hljs-comment">// 関数呼び出し</span>
 <span class="hljs-keyword">const</span> 関数の結果 = 関数名(引数<span class="hljs-number">1</span>, 引数<span class="hljs-number">2</span>);
-<span class="hljs-built_in">console</span>.log(関数の結果); <span class="hljs-comment">// =&gt; 関数の返り値</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(関数の結果); <span class="hljs-comment">// =&gt; 関数の返り値</span>
 </code></pre>
 <p>関数は次の4つの要素で構成されています。</p>
 <ul>
@@ -1476,29 +1596,29 @@
 <code>double</code>関数には<code>num</code>という仮引数が定義されており、<code>10</code>という値を引数として渡して関数を呼び出しています。
 仮引数の<code>num</code>には<code>10</code>が代入され、その値を2倍にしたものを<code>return</code>文で返しています。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">double</span>(<span class="hljs-params">num</span>) </span>{
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">double</span>(<span class="hljs-params">num</span>) {
     <span class="hljs-keyword">return</span> num * <span class="hljs-number">2</span>;
 }
 <span class="hljs-comment">// `double`関数の返り値は、`num`に`10`を入れて`return`文で返した値</span>
-<span class="hljs-built_in">console</span>.log(double(<span class="hljs-number">10</span>)); <span class="hljs-comment">// =&gt; 20</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">double</span>(<span class="hljs-number">10</span>)); <span class="hljs-comment">// =&gt; 20</span>
 </code></pre>
 <p>関数で<code>return</code>文が実行されると、関数内ではそれ以降の処理は行われません。
 また関数が値を返す必要がない場合は、<code>return</code>文では返り値を省略できます。
 <code>return</code>文の返り値を省略した場合は、未定義の値である<code>undefined</code>を返します。</p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">fn</span>(<span class="hljs-params"></span>) </span>{
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">fn</span>(<span class="hljs-params"></span>) {
     <span class="hljs-comment">// 何も返り値を指定してない場合は`undefined`を返す</span>
     <span class="hljs-keyword">return</span>;
     <span class="hljs-comment">// すでにreturnされているため、この行は実行されません</span>
 }
-<span class="hljs-built_in">console</span>.log(fn()); <span class="hljs-comment">// =&gt; undefined</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">fn</span>()); <span class="hljs-comment">// =&gt; undefined</span>
 </code></pre>
 <p>関数が何も値を返す必要がない場合は、<code>return</code>文そのものを省略できます。
-<code>return</code>文そのものを省略した場合は、<code>undefined</code>という値を返します。</p>
+<code>return</code>文を省略した場合は、<code>undefined</code>という値を返します。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">fn</span>(<span class="hljs-params"></span>) </span>{
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">fn</span>(<span class="hljs-params"></span>) {
 }
 
-<span class="hljs-built_in">console</span>.log(fn()); <span class="hljs-comment">// =&gt; undefined</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">fn</span>()); <span class="hljs-comment">// =&gt; undefined</span>
 </code></pre>
 <h2 id="function-arguments"><a name="function-arguments" class="plugin-anchor" href="#function-arguments"><i class="fa fa-link" aria-hidden="true"></i></a>関数の引数 </h2>
 <p>JavaScriptでは、関数に定義した仮引数の個数と実際に呼び出したときの引数の個数が違っても、関数を呼び出せます。
@@ -1508,54 +1628,54 @@
 <p>定義した関数の仮引数よりも呼び出し時の引数が少ない場合、余った仮引数には<code>undefined</code>という値が代入されます。</p>
 <p>次のコードでは、引数として渡した値をそのまま返す<code>echo</code>関数を定義しています。
 <code>echo</code>関数は仮引数<code>x</code>を定義していますが、引数を渡さずに呼び出すと、仮引数<code>x</code>には<code>undefined</code>が入ります。</p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">echo</span>(<span class="hljs-params">x</span>) </span>{
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">echo</span>(<span class="hljs-params">x</span>) {
     <span class="hljs-keyword">return</span> x;
 }
 
-<span class="hljs-built_in">console</span>.log(echo(<span class="hljs-number">1</span>)); <span class="hljs-comment">// =&gt; 1</span>
-<span class="hljs-built_in">console</span>.log(echo()); <span class="hljs-comment">// =&gt; undefined</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">echo</span>(<span class="hljs-number">1</span>)); <span class="hljs-comment">// =&gt; 1</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">echo</span>()); <span class="hljs-comment">// =&gt; undefined</span>
 </code></pre>
 <p>複数の引数を受けつける関数でも同様に、余った仮引数には<code>undefined</code>が入ります。</p>
 <p>次のコードでは、2つの引数を受け取り、それを配列として返す<code>argumentsToArray</code>関数を定義しています。
 このとき、引数として1つの値しか渡していない場合、残る仮引数には<code>undefined</code>が代入されます。</p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">argumentsToArray</span>(<span class="hljs-params">x, y</span>) </span>{
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">argumentsToArray</span>(<span class="hljs-params">x, y</span>) {
     <span class="hljs-keyword">return</span> [x, y];
 }
 
-<span class="hljs-built_in">console</span>.log(argumentsToArray(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)); <span class="hljs-comment">// =&gt; [1, 2]</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">argumentsToArray</span>(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)); <span class="hljs-comment">// =&gt; [1, 2]</span>
 <span class="hljs-comment">// 仮引数のxには1、yにはundefinedが入る</span>
-<span class="hljs-built_in">console</span>.log(argumentsToArray(<span class="hljs-number">1</span>)); <span class="hljs-comment">// =&gt; [1, undefined]</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">argumentsToArray</span>(<span class="hljs-number">1</span>)); <span class="hljs-comment">// =&gt; [1, undefined]</span>
 </code></pre>
 <h3 id="function-default-parameters"><a name="function-default-parameters" class="plugin-anchor" href="#function-default-parameters"><i class="fa fa-link" aria-hidden="true"></i></a>[ES2015] デフォルト引数 </h3>
 <p>デフォルト引数（デフォルトパラメータ）は、仮引数に対応する引数が渡されていない場合に、デフォルトで代入される値を指定できます。
 次のように、仮引数に対して<code>仮引数 = デフォルト値</code>という構文で、仮引数ごとにデフォルト値を指定できます。</p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> 関数名(<span class="hljs-params">仮引数<span class="hljs-number">1</span> = デフォルト値<span class="hljs-number">1</span>, 仮引数<span class="hljs-number">2</span> = デフォルト値<span class="hljs-number">2</span></span>) </span>{
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> 関数名(仮引数<span class="hljs-number">1</span> = デフォルト値<span class="hljs-number">1</span>, 仮引数<span class="hljs-number">2</span> = デフォルト値<span class="hljs-number">2</span>) {
 
 }
 </code></pre>
 <p>次のコードでは、渡した値をそのまま返す<code>echo</code>関数を定義しています。
 先ほどの<code>echo</code>関数とは異なり、仮引数<code>x</code>に対してデフォルト値を指定しています。
-そのため、引数を渡さずに<code>echo</code>関数を呼び出すと、<code>x</code>には<code>&quot;デフォルト値&quot;</code>が代入されます。</p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">echo</span>(<span class="hljs-params">x = <span class="hljs-string">&quot;デフォルト値&quot;</span></span>) </span>{
+そのため、引数を渡さずに<code>echo</code>関数を呼び出すと、<code>x</code>には<code>"デフォルト値"</code>が代入されます。</p>
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">echo</span>(<span class="hljs-params">x = <span class="hljs-string">"デフォルト値"</span></span>) {
     <span class="hljs-keyword">return</span> x;
 }
 
-<span class="hljs-built_in">console</span>.log(echo(<span class="hljs-number">1</span>)); <span class="hljs-comment">// =&gt; 1</span>
-<span class="hljs-built_in">console</span>.log(echo()); <span class="hljs-comment">// =&gt; &quot;デフォルト値&quot;</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">echo</span>(<span class="hljs-number">1</span>)); <span class="hljs-comment">// =&gt; 1</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">echo</span>()); <span class="hljs-comment">// =&gt; "デフォルト値"</span>
 </code></pre>
 <p>ES2015でデフォルト引数が導入されるまでは、OR演算子（<code>||</code>）を使ったデフォルト値の指定がよく利用されていました。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">addPrefix</span>(<span class="hljs-params">text, prefix</span>) </span>{
-    <span class="hljs-keyword">const</span> pre = prefix || <span class="hljs-string">&quot;デフォルト:&quot;</span>;
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">addPrefix</span>(<span class="hljs-params">text, prefix</span>) {
+    <span class="hljs-keyword">const</span> pre = prefix || <span class="hljs-string">"デフォルト:"</span>;
     <span class="hljs-keyword">return</span> pre + text;
 }
 
-<span class="hljs-built_in">console</span>.log(addPrefix(<span class="hljs-string">&quot;文字列&quot;</span>)); <span class="hljs-comment">// =&gt; &quot;デフォルト:文字列&quot;</span>
-<span class="hljs-built_in">console</span>.log(addPrefix(<span class="hljs-string">&quot;文字列&quot;</span>, <span class="hljs-string">&quot;カスタム:&quot;</span>)); <span class="hljs-comment">// =&gt; &quot;カスタム:文字列&quot;</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">addPrefix</span>(<span class="hljs-string">"文字列"</span>)); <span class="hljs-comment">// =&gt; "デフォルト:文字列"</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">addPrefix</span>(<span class="hljs-string">"文字列"</span>, <span class="hljs-string">"カスタム:"</span>)); <span class="hljs-comment">// =&gt; "カスタム:文字列"</span>
 </code></pre>
 <p>しかし、OR演算子（<code>||</code>）を使ったデフォルト値の指定にはひとつ問題があります。
 OR演算子（<code>||</code>）では、左辺のオペランドがfalsyな値の場合に右辺のオペランドを評価します。
-falsyな値とは、真偽値へと変換すると<code>false</code>となる次のような値のことです。</p>
+falsyな値とは、真偽値へと変換すると<code>false</code>となる次のような値のことです。（「<a href="../implicit-coercion/">暗黙的な型変換</a>」の章を参照）。</p>
 <ul>
 <li><code>false</code></li>
 <li><code>undefined</code></li>
@@ -1563,58 +1683,58 @@ falsyな値とは、真偽値へと変換すると<code>false</code>となる次
 <li><code>0</code></li>
 <li><code>0n</code></li>
 <li><code>NaN</code></li>
-<li><code>&quot;&quot;</code>（空文字列）</li>
+<li><code>""</code>（空文字列）</li>
 </ul>
 <p>OR演算子（<code>||</code>）を使った場合、次のように<code>prefix</code>に空文字列を指定した場合にもデフォルト値が入ります。
 これは書いた人が意図した挙動なのかがとてもわかりにくく、このような挙動はバグにつながることがあります。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">addPrefix</span>(<span class="hljs-params">text, prefix</span>) </span>{
-    <span class="hljs-keyword">const</span> pre = prefix || <span class="hljs-string">&quot;デフォルト:&quot;</span>;
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">addPrefix</span>(<span class="hljs-params">text, prefix</span>) {
+    <span class="hljs-keyword">const</span> pre = prefix || <span class="hljs-string">"デフォルト:"</span>;
     <span class="hljs-keyword">return</span> pre + text;
 }
 
 <span class="hljs-comment">// falsyな値を渡すとデフォルト値が入ってしまう</span>
-<span class="hljs-built_in">console</span>.log(addPrefix(<span class="hljs-string">&quot;文字列&quot;</span>)); <span class="hljs-comment">// =&gt; &quot;デフォルト:文字列&quot;</span>
-<span class="hljs-built_in">console</span>.log(addPrefix(<span class="hljs-string">&quot;文字列&quot;</span>, <span class="hljs-string">&quot;&quot;</span>)); <span class="hljs-comment">// =&gt; &quot;デフォルト:文字列&quot;</span>
-<span class="hljs-built_in">console</span>.log(addPrefix(<span class="hljs-string">&quot;文字列&quot;</span>, <span class="hljs-string">&quot;カスタム:&quot;</span>)); <span class="hljs-comment">// =&gt; &quot;カスタム:文字列&quot;</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">addPrefix</span>(<span class="hljs-string">"文字列"</span>)); <span class="hljs-comment">// =&gt; "デフォルト:文字列"</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">addPrefix</span>(<span class="hljs-string">"文字列"</span>, <span class="hljs-string">""</span>)); <span class="hljs-comment">// =&gt; "デフォルト:文字列"</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">addPrefix</span>(<span class="hljs-string">"文字列"</span>, <span class="hljs-string">"カスタム:"</span>)); <span class="hljs-comment">// =&gt; "カスタム:文字列"</span>
 </code></pre>
 <p>デフォルト引数を使って書くことで、このような挙動は起きなくなるため安全です。
-デフォルト引数では、引数が渡されなかった場合のみデフォルト値が入ります。</p>
+デフォルト引数では、引数が渡されなかった場合にデフォルト値が入ります。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">addPrefix</span>(<span class="hljs-params">text, prefix = <span class="hljs-string">&quot;デフォルト:&quot;</span></span>) </span>{
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">addPrefix</span>(<span class="hljs-params">text, prefix = <span class="hljs-string">"デフォルト:"</span></span>) {
     <span class="hljs-keyword">return</span> prefix + text;
 }
 <span class="hljs-comment">// falsyな値を渡してもデフォルト値は代入されない</span>
-<span class="hljs-built_in">console</span>.log(addPrefix(<span class="hljs-string">&quot;文字列&quot;</span>)); <span class="hljs-comment">// =&gt; &quot;デフォルト:文字列&quot;</span>
-<span class="hljs-built_in">console</span>.log(addPrefix(<span class="hljs-string">&quot;文字列&quot;</span>, <span class="hljs-string">&quot;&quot;</span>)); <span class="hljs-comment">// =&gt; &quot;文字列&quot;</span>
-<span class="hljs-built_in">console</span>.log(addPrefix(<span class="hljs-string">&quot;文字列&quot;</span>, <span class="hljs-string">&quot;カスタム:&quot;</span>)); <span class="hljs-comment">// =&gt; &quot;カスタム:文字列&quot;</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">addPrefix</span>(<span class="hljs-string">"文字列"</span>)); <span class="hljs-comment">// =&gt; "デフォルト:文字列"</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">addPrefix</span>(<span class="hljs-string">"文字列"</span>, <span class="hljs-string">""</span>)); <span class="hljs-comment">// =&gt; "文字列"</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">addPrefix</span>(<span class="hljs-string">"文字列"</span>, <span class="hljs-string">"カスタム:"</span>)); <span class="hljs-comment">// =&gt; "カスタム:文字列"</span>
 </code></pre>
 <p>また、ES2020から導入されたNullish coalescing演算子(<code>??</code>)を利用することでも、
 OR演算子（<code>||</code>）の問題を避けつつデフォルト値を指定できます。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a>
 <!-- doctest:meta:{ "ECMAScript": 2020 } --></p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">addPrefix</span>(<span class="hljs-params">text, prefix</span>) </span>{
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">addPrefix</span>(<span class="hljs-params">text, prefix</span>) {
     <span class="hljs-comment">// prefixがnullまたはundefinedの時、デフォルト値を返す</span>
-    <span class="hljs-keyword">const</span> pre = prefix ?? <span class="hljs-string">&quot;デフォルト:&quot;</span>;
+    <span class="hljs-keyword">const</span> pre = prefix ?? <span class="hljs-string">"デフォルト:"</span>;
     <span class="hljs-keyword">return</span> pre + text;
 }
 
-<span class="hljs-built_in">console</span>.log(addPrefix(<span class="hljs-string">&quot;文字列&quot;</span>)); <span class="hljs-comment">// =&gt; &quot;デフォルト:文字列&quot;</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">addPrefix</span>(<span class="hljs-string">"文字列"</span>)); <span class="hljs-comment">// =&gt; "デフォルト:文字列"</span>
 <span class="hljs-comment">// falsyな値でも意図通りに動作する</span>
-<span class="hljs-built_in">console</span>.log(addPrefix(<span class="hljs-string">&quot;文字列&quot;</span>, <span class="hljs-string">&quot;&quot;</span>)); <span class="hljs-comment">// =&gt; &quot;文字列&quot;</span>
-<span class="hljs-built_in">console</span>.log(addPrefix(<span class="hljs-string">&quot;文字列&quot;</span>, <span class="hljs-string">&quot;カスタム:&quot;</span>)); <span class="hljs-comment">// =&gt; &quot;カスタム:文字列&quot;</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">addPrefix</span>(<span class="hljs-string">"文字列"</span>, <span class="hljs-string">""</span>)); <span class="hljs-comment">// =&gt; "文字列"</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">addPrefix</span>(<span class="hljs-string">"文字列"</span>, <span class="hljs-string">"カスタム:"</span>)); <span class="hljs-comment">// =&gt; "カスタム:文字列"</span>
 </code></pre>
 <h3 id="function-more-arguments"><a name="function-more-arguments" class="plugin-anchor" href="#function-more-arguments"><i class="fa fa-link" aria-hidden="true"></i></a>呼び出し時の引数が多いとき </h3>
 <p>関数の仮引数に対して引数の個数が多い場合、あふれた引数は単純に無視されます。</p>
-<p>次コードでは、2つの引数を足し算した値を返す<code>add</code>関数を定義しています。
+<p>次のコードでは、2つの引数を足し算した値を返す<code>add</code>関数を定義しています。
 この<code>add</code>関数には仮引数が2つしかありません。
 そのため、3つ以上の引数を渡しても3番目以降の引数は単純に無視されます。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">add</span>(<span class="hljs-params">x, y</span>) </span>{
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">add</span>(<span class="hljs-params">x, y</span>) {
     <span class="hljs-keyword">return</span> x + y;
 }
-add(<span class="hljs-number">1</span>, <span class="hljs-number">3</span>); <span class="hljs-comment">// =&gt; 4</span>
-add(<span class="hljs-number">1</span>, <span class="hljs-number">3</span>, <span class="hljs-number">5</span>); <span class="hljs-comment">// =&gt; 4</span>
+<span class="hljs-title function_">add</span>(<span class="hljs-number">1</span>, <span class="hljs-number">3</span>); <span class="hljs-comment">// =&gt; 4</span>
+<span class="hljs-title function_">add</span>(<span class="hljs-number">1</span>, <span class="hljs-number">3</span>, <span class="hljs-number">5</span>); <span class="hljs-comment">// =&gt; 4</span>
 </code></pre>
 <h2 id="variable-arguments"><a name="variable-arguments" class="plugin-anchor" href="#variable-arguments"><i class="fa fa-link" aria-hidden="true"></i></a>可変長引数 </h2>
 <p>関数において引数の数が固定ではなく、任意の個数の引数を受け取りたい場合があります。
@@ -1622,8 +1742,8 @@ add(<span class="hljs-number">1</span>, <span class="hljs-number">3</span>, <spa
 このような、固定した数ではなく任意の個数の引数を受け取れることを<strong>可変長引数</strong>と呼びます。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
 <pre><code class="lang-js"><span class="hljs-comment">// Math.maxは可変長引数を受け取る関数</span>
-<span class="hljs-keyword">const</span> max = <span class="hljs-built_in">Math</span>.max(<span class="hljs-number">1</span>, <span class="hljs-number">5</span>, <span class="hljs-number">10</span>, <span class="hljs-number">20</span>);
-<span class="hljs-built_in">console</span>.log(max); <span class="hljs-comment">// =&gt; 20</span>
+<span class="hljs-keyword">const</span> max = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">max</span>(<span class="hljs-number">1</span>, <span class="hljs-number">5</span>, <span class="hljs-number">10</span>, <span class="hljs-number">20</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(max); <span class="hljs-comment">// =&gt; 20</span>
 </code></pre>
 <p>可変長引数を実現するためには、Rest parametersか関数の中でのみ参照できる<code>arguments</code>という特殊な変数を利用します。</p>
 <h3 id="rest-parameters"><a name="rest-parameters" class="plugin-anchor" href="#rest-parameters"><i class="fa fa-link" aria-hidden="true"></i></a>[ES2015] Rest parameters </h3>
@@ -1632,37 +1752,37 @@ Rest parametersには、関数に渡された値が配列として代入され�
 <p>次のコードでは、<code>fn</code>関数に<code>...args</code>というRest parametersが定義されています。
 この<code>fn</code>関数を呼び出したときの引数の値が、<code>args</code>という変数に配列として代入されます。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">fn</span>(<span class="hljs-params">...args</span>) </span>{
-    <span class="hljs-comment">// argsは引数の値が順番に入った配列</span>
-    <span class="hljs-built_in">console</span>.log(args); <span class="hljs-comment">// =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]</span>
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">fn</span>(<span class="hljs-params">...args</span>) {
+    <span class="hljs-comment">// argsは、渡された引数が入った配列</span>
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(args); <span class="hljs-comment">// =&gt; ["a", "b", "c"]</span>
 }
-fn(<span class="hljs-string">&quot;a&quot;</span>, <span class="hljs-string">&quot;b&quot;</span>, <span class="hljs-string">&quot;c&quot;</span>);
+<span class="hljs-title function_">fn</span>(<span class="hljs-string">"a"</span>, <span class="hljs-string">"b"</span>, <span class="hljs-string">"c"</span>);
 </code></pre>
 <p>Rest parametersは、通常の仮引数と組み合わせても定義できます。
 ほかの仮引数と組み合わせる際には、必ずRest parametersを末尾の仮引数として定義する必要があります。</p>
 <p>次のコードでは、1番目の引数は<code>arg1</code>に代入され、残りの引数が<code>restArgs</code>に配列として代入されます。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">fn</span>(<span class="hljs-params">arg1, ...restArgs</span>) </span>{
-    <span class="hljs-built_in">console</span>.log(arg1); <span class="hljs-comment">// =&gt; &quot;a&quot;</span>
-    <span class="hljs-built_in">console</span>.log(restArgs); <span class="hljs-comment">// =&gt; [&quot;b&quot;, &quot;c&quot;]</span>
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">fn</span>(<span class="hljs-params">arg1, ...restArgs</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(arg1); <span class="hljs-comment">// =&gt; "a"</span>
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(restArgs); <span class="hljs-comment">// =&gt; ["b", "c"]</span>
 }
-fn(<span class="hljs-string">&quot;a&quot;</span>, <span class="hljs-string">&quot;b&quot;</span>, <span class="hljs-string">&quot;c&quot;</span>);
+<span class="hljs-title function_">fn</span>(<span class="hljs-string">"a"</span>, <span class="hljs-string">"b"</span>, <span class="hljs-string">"c"</span>);
 </code></pre>
 <p>Rest parametersは、引数をまとめた配列を仮引数に定義する構文でした。
 一方で、配列を展開して関数の引数に渡すSpread構文もあります。</p>
 <p>Spread構文は、配列の前に<code>...</code>をつけた構文のことで、関数には配列の値を展開したものが引数として渡されます。
 次のコードでは、<code>array</code>の配列を展開して<code>fn</code>関数の引数として渡しています。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">fn</span>(<span class="hljs-params">x, y, z</span>) </span>{
-    <span class="hljs-built_in">console</span>.log(x); <span class="hljs-comment">// =&gt; 1</span>
-    <span class="hljs-built_in">console</span>.log(y); <span class="hljs-comment">// =&gt; 2</span>
-    <span class="hljs-built_in">console</span>.log(z); <span class="hljs-comment">// =&gt; 3</span>
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">fn</span>(<span class="hljs-params">x, y, z</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(x); <span class="hljs-comment">// =&gt; 1</span>
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(y); <span class="hljs-comment">// =&gt; 2</span>
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(z); <span class="hljs-comment">// =&gt; 3</span>
 }
 <span class="hljs-keyword">const</span> array = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>];
 <span class="hljs-comment">// Spread構文で配列を引数に展開して関数を呼び出す</span>
-fn(...array);
+<span class="hljs-title function_">fn</span>(...array);
 <span class="hljs-comment">// 次のように書いたのと同じ意味</span>
-fn(array[<span class="hljs-number">0</span>], array[<span class="hljs-number">1</span>], array[<span class="hljs-number">2</span>]);
+<span class="hljs-title function_">fn</span>(array[<span class="hljs-number">0</span>], array[<span class="hljs-number">1</span>], array[<span class="hljs-number">2</span>]);
 </code></pre>
 <h3 id="arguments"><a name="arguments" class="plugin-anchor" href="#arguments"><i class="fa fa-link" aria-hidden="true"></i></a><code>arguments</code> </h3>
 <p>可変長引数を扱う方法として、<code>arguments</code>という関数の中でのみ参照できる特殊な変数があります。
@@ -1672,13 +1792,13 @@ fn(array[<span class="hljs-number">0</span>], array[<span class="hljs-number">1<
 <p>次のコードでは、<code>fn</code>関数に仮引数が定義されていません。
 しかし、関数の内部では<code>arguments</code>という変数で、実際に渡された引数を配列のように参照できます。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">fn</span>(<span class="hljs-params"></span>) </span>{
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">fn</span>(<span class="hljs-params"></span>) {
     <span class="hljs-comment">// `arguments`はインデックスを指定して各要素にアクセスできる</span>
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">arguments</span>[<span class="hljs-number">0</span>]); <span class="hljs-comment">// =&gt; &quot;a&quot;</span>
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">arguments</span>[<span class="hljs-number">1</span>]); <span class="hljs-comment">// =&gt; &quot;b&quot;</span>
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">arguments</span>[<span class="hljs-number">2</span>]); <span class="hljs-comment">// =&gt; &quot;c&quot;</span>
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-variable language_">arguments</span>[<span class="hljs-number">0</span>]); <span class="hljs-comment">// =&gt; "a"</span>
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-variable language_">arguments</span>[<span class="hljs-number">1</span>]); <span class="hljs-comment">// =&gt; "b"</span>
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-variable language_">arguments</span>[<span class="hljs-number">2</span>]); <span class="hljs-comment">// =&gt; "c"</span>
 }
-fn(<span class="hljs-string">&quot;a&quot;</span>, <span class="hljs-string">&quot;b&quot;</span>, <span class="hljs-string">&quot;c&quot;</span>);
+<span class="hljs-title function_">fn</span>(<span class="hljs-string">"a"</span>, <span class="hljs-string">"b"</span>, <span class="hljs-string">"c"</span>);
 </code></pre>
 <p>Rest parametersが利用できる環境では、<code>arguments</code>変数を使うべき理由はありません。
 <code>arguments</code>変数には次のような問題があります。</p>
@@ -1696,26 +1816,26 @@ Rest parametersであれば、仮引数で可変長を受け入れるかが明�
 分割代入はオブジェクトや配列からプロパティを取り出し、変数として定義し直す構文です。</p>
 <p>次のコードでは、関数の引数として<code>user</code>オブジェクトを渡し、<code>id</code>プロパティをコンソールへ出力しています。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">printUserId</span>(<span class="hljs-params">user</span>) </span>{
-    <span class="hljs-built_in">console</span>.log(user.id); <span class="hljs-comment">// =&gt; 42</span>
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">printUserId</span>(<span class="hljs-params">user</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(user.<span class="hljs-property">id</span>); <span class="hljs-comment">// =&gt; 42</span>
 }
 <span class="hljs-keyword">const</span> user = {
     <span class="hljs-attr">id</span>: <span class="hljs-number">42</span>
 };
-printUserId(user);
+<span class="hljs-title function_">printUserId</span>(user);
 </code></pre>
 <p>関数の引数に分割代入を使うことで、このコードは次のように書けます。
 次のコードの<code>printUserId</code>関数はオブジェクトを引数として受け取ります。
 この受け取った<code>user</code>オブジェクトの<code>id</code>プロパティを変数<code>id</code>として定義しています。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
 <pre><code class="lang-js"><span class="hljs-comment">// 第1引数のオブジェクトから`id`プロパティを変数`id`として定義する</span>
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">printUserId</span>(<span class="hljs-params">{ id }</span>) </span>{
-    <span class="hljs-built_in">console</span>.log(id); <span class="hljs-comment">// =&gt; 42</span>
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">printUserId</span>(<span class="hljs-params">{ id }</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(id); <span class="hljs-comment">// =&gt; 42</span>
 }
 <span class="hljs-keyword">const</span> user = {
     <span class="hljs-attr">id</span>: <span class="hljs-number">42</span>
 };
-printUserId(user);
+<span class="hljs-title function_">printUserId</span>(user);
 </code></pre>
 <p>代入演算子（<code>=</code>）におけるオブジェクトの分割代入では、左辺に定義したい変数を定義し、右辺のオブジェクトから対応するプロパティを代入していました。
 関数の仮引数が左辺で、関数に渡す引数を右辺と考えるとほぼ同じ構文であることがわかります。</p>
@@ -1724,22 +1844,22 @@ printUserId(user);
 };
 <span class="hljs-comment">// オブジェクトの分割代入</span>
 <span class="hljs-keyword">const</span> { id } = user;
-<span class="hljs-built_in">console</span>.log(id); <span class="hljs-comment">// =&gt; 42</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(id); <span class="hljs-comment">// =&gt; 42</span>
 <span class="hljs-comment">// 関数の引数の分割代入</span>
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">printUserId</span>(<span class="hljs-params">{ id }</span>) </span>{
-    <span class="hljs-built_in">console</span>.log(id); <span class="hljs-comment">// =&gt; 42</span>
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">printUserId</span>(<span class="hljs-params">{ id }</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(id); <span class="hljs-comment">// =&gt; 42</span>
 }
-printUserId(user);
+<span class="hljs-title function_">printUserId</span>(user);
 </code></pre>
 <p>関数の引数における分割代入は、オブジェクトだけではなく配列についても利用できます。
 次のコードでは、引数に渡された配列の1番目の要素が<code>first</code>に、2番目の要素が<code>second</code>に代入されます。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">print</span>(<span class="hljs-params">[first, second]</span>) </span>{
-    <span class="hljs-built_in">console</span>.log(first); <span class="hljs-comment">// =&gt; 1</span>
-    <span class="hljs-built_in">console</span>.log(second); <span class="hljs-comment">// =&gt; 2</span>
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">print</span>(<span class="hljs-params">[first, second]</span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(first); <span class="hljs-comment">// =&gt; 1</span>
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(second); <span class="hljs-comment">// =&gt; 2</span>
 }
 <span class="hljs-keyword">const</span> array = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>];
-print(array);
+<span class="hljs-title function_">print</span>(array);
 </code></pre>
 <h2 id="first-class-function"><a name="first-class-function" class="plugin-anchor" href="#first-class-function"><i class="fa fa-link" aria-hidden="true"></i></a>関数はオブジェクト </h2>
 <p>JavaScriptでは、関数は関数オブジェクトとも呼ばれ、オブジェクトの一種です。
@@ -1748,12 +1868,12 @@ print(array);
 また、関数はほかの値と同じように変数へ代入したり、関数の引数として渡すことが可能です。</p>
 <p>次のコードでは、定義した<code>fn</code>関数を<code>myFunc</code>変数へ代入してから、呼び出しています。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">fn</span>(<span class="hljs-params"></span>) </span>{
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;fnが呼び出されました&quot;</span>);
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">fn</span>(<span class="hljs-params"></span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">"fnが呼び出されました"</span>);
 }
 <span class="hljs-comment">// 関数`fn`を`myFunc`変数に代入している</span>
 <span class="hljs-keyword">const</span> myFunc = fn;
-myFunc();
+<span class="hljs-title function_">myFunc</span>();
 </code></pre>
 <p>このように関数が値として扱えることを、<strong>ファーストクラスファンクション</strong>（第一級関数）と呼びます。</p>
 <p>先ほどのコードでは、関数宣言をしてから変数へ代入していましたが、最初から関数を値として定義できます。
@@ -1764,7 +1884,7 @@ myFunc();
 関数宣言は文でしたが、関数式では関数を値として扱っています。
 これは、文字列や数値などの変数宣言と同じ定義方法です。</p>
 <pre><code class="lang-js"><span class="hljs-comment">// 関数式</span>
-<span class="hljs-keyword">const</span> 関数名 = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+<span class="hljs-keyword">const</span> 変数名 = <span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) {
     <span class="hljs-comment">// 関数を呼び出したときの処理</span>
     <span class="hljs-comment">// ...</span>
     <span class="hljs-keyword">return</span> 関数の返り値;
@@ -1773,16 +1893,16 @@ myFunc();
 <p>関数式では<code>function</code>キーワードの右辺に書く関数名は省略できます。
 なぜなら、定義した関数式は変数名で参照できるためです。
 一方、関数宣言では<code>function</code>キーワードの右辺の関数名は省略できません。</p>
-<pre><code class="lang-js"><span class="hljs-comment">// 関数式は変数名で参照できるため、&quot;関数名&quot;を省略できる</span>
-<span class="hljs-keyword">const</span> 変数名 = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+<pre><code class="lang-js"><span class="hljs-comment">// 関数式は変数名で参照できるため、"関数名"を省略できる</span>
+<span class="hljs-keyword">const</span> 変数名 = <span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) {
 };
-<span class="hljs-comment">// 関数宣言では&quot;関数名&quot;は省略できない</span>
-<span class="hljs-function"><span class="hljs-keyword">function</span> 関数名(<span class="hljs-params"></span>) </span>{
+<span class="hljs-comment">// 関数宣言では"関数名"は省略できない</span>
+<span class="hljs-keyword">function</span> 関数名() {
 }
 </code></pre>
 <!-- textlint-disable prh -->
 <p>このように関数式では、名前を持たない関数を変数に代入できます。
-このような名前を持たない関数を<strong>匿名関数</strong>（または無名関数）と呼びます。</p>
+このような名前を持たない関数を<strong>無名関数</strong>（または匿名関数）と呼びます。</p>
 <!-- textlint-enable prh -->
 <p>もちろん関数式でも関数に名前をつけることができます。
 しかし、この関数の名前は関数の外からは呼ぶことができません。
@@ -1790,21 +1910,21 @@ myFunc();
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
 <pre><code class="lang-js"><span class="hljs-comment">// factorialは関数の外から呼び出せる名前</span>
 <span class="hljs-comment">// innerFactは関数の外から呼び出せない名前</span>
-<span class="hljs-keyword">const</span> factorial = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">innerFact</span>(<span class="hljs-params">n</span>) </span>{
+<span class="hljs-keyword">const</span> factorial = <span class="hljs-keyword">function</span> <span class="hljs-title function_">innerFact</span>(<span class="hljs-params">n</span>) {
     <span class="hljs-keyword">if</span> (n === <span class="hljs-number">0</span>) {
         <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;
     }
     <span class="hljs-comment">// innerFactを再帰的に呼び出している</span>
-    <span class="hljs-keyword">return</span> n * innerFact(n - <span class="hljs-number">1</span>);
+    <span class="hljs-keyword">return</span> n * <span class="hljs-title function_">innerFact</span>(n - <span class="hljs-number">1</span>);
 };
-<span class="hljs-built_in">console</span>.log(factorial(<span class="hljs-number">3</span>)); <span class="hljs-comment">// =&gt; 6</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">factorial</span>(<span class="hljs-number">3</span>)); <span class="hljs-comment">// =&gt; 6</span>
 </code></pre>
 <h3 id="arrow-function"><a name="arrow-function" class="plugin-anchor" href="#arrow-function"><i class="fa fa-link" aria-hidden="true"></i></a>[ES2015] Arrow Function </h3>
 <p>関数式には<code>function</code>キーワードを使った方法以外に、Arrow Functionと呼ばれる書き方があります。
-名前のとおり矢印のような<code>=&gt;</code>（イコールと大なり記号）を使い、匿名関数を定義する構文です。
+名前のとおり矢印のような<code>=&gt;</code>（イコールと大なり記号）を使い、無名関数を定義する構文です。
 次のように、<code>function</code>キーワードを使った関数式とよく似た書き方をします。</p>
 <pre><code class="lang-js"><span class="hljs-comment">// Arrow Functionを使った関数定義</span>
-<span class="hljs-keyword">const</span> 関数名 = <span class="hljs-function">() =&gt;</span> {
+<span class="hljs-keyword">const</span> 変数名 = <span class="hljs-function">() =&gt;</span> {
     <span class="hljs-comment">// 関数を呼び出したときの処理</span>
     <span class="hljs-comment">// ...</span>
     <span class="hljs-keyword">return</span> 関数の返す値;
@@ -1822,19 +1942,19 @@ myFunc();
 <!-- textlint-disable eslint -->
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
 <pre><code class="lang-js"><span class="hljs-comment">// 仮引数の数と定義</span>
-<span class="hljs-keyword">const</span> fnA = <span class="hljs-function">() =&gt;</span> { <span class="hljs-comment">/* 仮引数がないとき */</span> };
-<span class="hljs-keyword">const</span> fnB = <span class="hljs-function">(<span class="hljs-params">x</span>) =&gt;</span> { <span class="hljs-comment">/* 仮引数が1つのみのとき */</span> };
-<span class="hljs-keyword">const</span> fnC = <span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span> { <span class="hljs-comment">/* 仮引数が1つのみのときは()を省略可能 */</span> };
-<span class="hljs-keyword">const</span> fnD = <span class="hljs-function">(<span class="hljs-params">x, y</span>) =&gt;</span> { <span class="hljs-comment">/* 仮引数が複数のとき */</span> };
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">fnA</span> = (<span class="hljs-params"></span>) =&gt; { <span class="hljs-comment">/* 仮引数がないとき */</span> };
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">fnB</span> = (<span class="hljs-params">x</span>) =&gt; { <span class="hljs-comment">/* 仮引数が1つのみのとき */</span> };
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">fnC</span> = x =&gt; { <span class="hljs-comment">/* 仮引数が1つのみのときは()を省略可能 */</span> };
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">fnD</span> = (<span class="hljs-params">x, y</span>) =&gt; { <span class="hljs-comment">/* 仮引数が複数のとき */</span> };
 <span class="hljs-comment">// 値の返し方</span>
 <span class="hljs-comment">// 次の２つの定義は同じ意味となる</span>
-<span class="hljs-keyword">const</span> mulA = <span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span> { <span class="hljs-keyword">return</span> x * x; }; <span class="hljs-comment">// ブロックの中でreturn</span>
-<span class="hljs-keyword">const</span> mulB = <span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span> x * x;            <span class="hljs-comment">// 1行のみの場合はreturnとブロックを省略できる</span>
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">mulA</span> = x =&gt; { <span class="hljs-keyword">return</span> x * x; }; <span class="hljs-comment">// ブロックの中でreturn</span>
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">mulB</span> = x =&gt; x * x;            <span class="hljs-comment">// 1行のみの場合はreturnとブロックを省略できる</span>
 </code></pre>
 <!-- textlint-enable eslint -->
 <p>Arrow Functionについては次のような特徴があります。</p>
 <ul>
-<li>名前をつけることができない（常に匿名関数）</li>
+<li>名前をつけることができない（常に無名関数）</li>
 <li><code>this</code>が静的に決定できる（詳細は「<a href="../function-scope/">関数とスコープ</a>」の章で解説します）</li>
 <li><code>function</code>キーワードに比べて短く書くことができる</li>
 <li><code>new</code>できない（コンストラクタ関数ではない）</li>
@@ -1844,11 +1964,11 @@ myFunc();
 配列の<code>map</code>メソッドは、配列の要素を順番にコールバック関数へ渡し、そのコールバック関数が返した値を新しい配列にして返します。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> array = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>];
-<span class="hljs-comment">// 1,2,3と順番に値が渡されコールバック関数（匿名関数）が処理する</span>
-<span class="hljs-keyword">const</span> doubleArray = array.map(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">value</span>) </span>{
+<span class="hljs-comment">// 1,2,3と順番に値が渡されコールバック関数（無名関数）が処理する</span>
+<span class="hljs-keyword">const</span> doubleArray = array.<span class="hljs-title function_">map</span>(<span class="hljs-keyword">function</span>(<span class="hljs-params">value</span>) {
     <span class="hljs-keyword">return</span> value * <span class="hljs-number">2</span>; <span class="hljs-comment">// 返した値をまとめた配列ができる</span>
 });
-<span class="hljs-built_in">console</span>.log(doubleArray); <span class="hljs-comment">// =&gt; [2, 4, 6]</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(doubleArray); <span class="hljs-comment">// =&gt; [2, 4, 6]</span>
 </code></pre>
 <p>Arrow Functionでは処理が1つの式だけである場合に、<code>return</code>文を省略し暗黙的にその式の評価結果を<code>return</code>の返り値とします。
 また、Arrow Functionは仮引数が1つである場合は<code>()</code>を省略できます。
@@ -1858,8 +1978,8 @@ myFunc();
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> array = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>];
 <span class="hljs-comment">// 仮引数が1つなので`()`を省略できる</span>
 <span class="hljs-comment">// 関数の処理が1つの式なので`return`文を省略できる</span>
-<span class="hljs-keyword">const</span> doubleArray = array.map(<span class="hljs-function"><span class="hljs-params">value</span> =&gt;</span> value * <span class="hljs-number">2</span>);
-<span class="hljs-built_in">console</span>.log(doubleArray); <span class="hljs-comment">// =&gt; [2, 4, 6]</span>
+<span class="hljs-keyword">const</span> doubleArray = array.<span class="hljs-title function_">map</span>(<span class="hljs-function"><span class="hljs-params">value</span> =&gt;</span> value * <span class="hljs-number">2</span>);
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(doubleArray); <span class="hljs-comment">// =&gt; [2, 4, 6]</span>
 </code></pre>
 <p>Arrow Functionは<code>function</code>キーワードの関数式に比べて、できることとできないことがはっきりしています。
 たとえば、<code>function</code>キーワードでは非推奨としていた<code>arguments</code>変数を参照できますが、Arrow Functionでは参照できなくなっています。
@@ -1874,26 +1994,36 @@ Arrow Functionでは、人による解釈や実装の違いが生まれにくく
 また、仮引数の定義が異なっていても、関数の名前が同じなら上書きされます。</p>
 <!-- textlint-disable eslint -->
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a>
-<!-- babelのパースエラーを回避 https://github.com/asciidwango/js-primer/issues/711 -->
 <!-- doctest:disable --></p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">fn</span>(<span class="hljs-params">x</span>) </span>{
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">fn</span>(<span class="hljs-params">x</span>) {
     <span class="hljs-keyword">return</span> <span class="hljs-string">`最初の関数 x: <span class="hljs-subst">${x}</span>`</span>;
 }
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">fn</span>(<span class="hljs-params">x, y</span>) </span>{
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">fn</span>(<span class="hljs-params">x, y</span>) {
     <span class="hljs-keyword">return</span> <span class="hljs-string">`最後の関数 x: <span class="hljs-subst">${x}</span>, y: <span class="hljs-subst">${y}</span>`</span>;
 }
-<span class="hljs-built_in">console</span>.log(fn(<span class="hljs-number">2</span>, <span class="hljs-number">10</span>)); <span class="hljs-comment">// =&gt; &quot;最後の関数 x: 2, y: 10&quot;</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-title function_">fn</span>(<span class="hljs-number">2</span>, <span class="hljs-number">10</span>)); <span class="hljs-comment">// =&gt; "最後の関数 x: 2, y: 10"</span>
+</code></pre>
+<p>このように、同じ関数名で複数の関数を定義することは、関数を上書きしてしまうため避けるべきです。
+引数の違いで関数を呼び分けたい場合は、別々の名前で関数を定義するか関数の内部で引数の値で処理を分岐する必要があります。</p>
+<p>この関数定義の上書きは<code>function</code>キーワードでの関数宣言と<code>var</code>キーワードを使った関数式のみで発生します。
+一方で、<code>const</code>や<code>let</code>では同じ変数名の定義はエラーとなるため、このような関数定義の上書きもエラーとなります。</p>
+<p><a class="gitbook-plugin-js-console" aria-hidden="true"></a>
+<!-- doctest:disable --></p>
+<pre><code class="lang-js"><span class="hljs-keyword">const</span> <span class="hljs-title function_">fn</span> = (<span class="hljs-params">x</span>) =&gt; {
+    <span class="hljs-keyword">return</span> <span class="hljs-string">`最初の関数 x: <span class="hljs-subst">${x}</span>`</span>;
+};
+<span class="hljs-comment">// constは同じ変数名を定義できないため、構文エラーとなる</span>
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">fn</span> = (<span class="hljs-params">x, y</span>) =&gt; {
+    <span class="hljs-keyword">return</span> <span class="hljs-string">`最後の関数 x: <span class="hljs-subst">${x}</span>, y: <span class="hljs-subst">${y}</span>`</span>;
+};
 </code></pre>
 <!-- textlint-enable eslint -->
-<p>この関数定義の上書きは<code>function</code>キーワードでの関数宣言と<code>var</code>キーワードを使った関数式のみで発生します。
-<code>let</code>や<code>const</code>では同じ変数名の定義はエラーとなるため、このような関数定義の上書きもエラーとなります。</p>
-<p>このように、同じ関数名で複数の関数を定義することは基本的に意味がないため避けるべきです。
-引数の違いで関数を呼び分けたい場合は、別々の名前で関数を定義するか関数の内部で引数の値で処理を分岐する必要があります。</p>
-<h3 id="callback"><a name="callback" class="plugin-anchor" href="#callback"><i class="fa fa-link" aria-hidden="true"></i></a>コールバック関数 </h3>
-<p>関数はファーストクラスであるため、その場で作った匿名関数を関数の引数（値）として渡すことができます。
+<p>関数の上書きを避けたい場合は、<code>const</code>と関数式を使って関数を定義することで、意図しない上書きが発生しにくくなります。</p>
+<h2 id="callback"><a name="callback" class="plugin-anchor" href="#callback"><i class="fa fa-link" aria-hidden="true"></i></a>コールバック関数 </h2>
+<p>関数はファーストクラスであるため、その場で作った無名関数を関数の引数（値）として渡すことができます。
 引数として渡される関数のことを<strong>コールバック関数</strong>と呼びます。
 一方、コールバック関数を引数として使う関数やメソッドのことを<strong>高階関数</strong>と呼びます。</p>
-<pre><code class="lang-js"><span class="hljs-function"><span class="hljs-keyword">function</span> 高階関数(<span class="hljs-params">コールバック関数</span>) </span>{
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> 高階関数(コールバック関数) {
     コールバック関数();
 }
 </code></pre>
@@ -1901,21 +2031,21 @@ Arrow Functionでは、人による解釈や実装の違いが生まれにくく
 <code>forEach</code>メソッドは、配列の各要素に対してコールバック関数を一度ずつ呼び出します。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> array = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>];
-<span class="hljs-keyword">const</span> output = <span class="hljs-function">(<span class="hljs-params">value</span>) =&gt;</span> {
-    <span class="hljs-built_in">console</span>.log(value);
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">output</span> = (<span class="hljs-params">value</span>) =&gt; {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(value);
 };
-array.forEach(output);
+array.<span class="hljs-title function_">forEach</span>(output);
 <span class="hljs-comment">// 次のように実行しているのと同じ</span>
 <span class="hljs-comment">// output(1); =&gt; 1</span>
 <span class="hljs-comment">// output(2); =&gt; 2</span>
 <span class="hljs-comment">// output(3); =&gt; 3</span>
 </code></pre>
 <p>毎回、関数を定義してその関数をコールバック関数として渡すのは、少し手間がかかります。
-そこで、関数はファーストクラスであることを利用して、コールバック関数となる匿名関数をその場で定義して渡せます。</p>
+そこで、関数はファーストクラスであることを利用して、コールバック関数となる無名関数をその場で定義して渡せます。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> array = [<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>];
-array.forEach(<span class="hljs-function">(<span class="hljs-params">value</span>) =&gt;</span> {
-    <span class="hljs-built_in">console</span>.log(value);
+array.<span class="hljs-title function_">forEach</span>(<span class="hljs-function">(<span class="hljs-params">value</span>) =&gt;</span> {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(value);
 });
 </code></pre>
 <p>コールバック関数は非同期処理においてもよく利用されます。
@@ -1927,7 +2057,7 @@ JavaScriptにおいて、関数とメソッドの機能的な違いはありま�
 <p>次のコードでは、<code>obj</code>の<code>method1</code>プロパティと<code>method2</code>プロパティに関数を定義しています。
 この<code>obj.method1</code>プロパティと<code>obj.method2</code>プロパティがメソッドです。</p>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> obj = {
-    <span class="hljs-attr">method1</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-attr">method1</span>: <span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) {
         <span class="hljs-comment">// `function`キーワードでのメソッド</span>
     },
     <span class="hljs-attr">method2</span>: <span class="hljs-function">() =&gt;</span> {
@@ -1937,7 +2067,7 @@ JavaScriptにおいて、関数とメソッドの機能的な違いはありま�
 </code></pre>
 <p>次のように空オブジェクトの<code>obj</code>を定義してから、<code>method</code>プロパティへ関数を代入してもメソッドを定義できます。</p>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> obj = {};
-obj.method = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+obj.<span class="hljs-property">method</span> = <span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) {
 };
 </code></pre>
 <!-- textlint-disable no-js-function-paren -->
@@ -1945,11 +2075,11 @@ obj.method = <span class="hljs-function"><span class="hljs-keyword">function</sp
 <!-- textlint-enable no-js-function-paren -->
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> obj = {
-    <span class="hljs-attr">method</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
-        <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;this is method&quot;</span>;
+    <span class="hljs-attr">method</span>: <span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"this is method"</span>;
     }
 };
-<span class="hljs-built_in">console</span>.log(obj.method()); <span class="hljs-comment">// =&gt; &quot;this is method&quot;</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(obj.<span class="hljs-title function_">method</span>()); <span class="hljs-comment">// =&gt; "this is method"</span>
 </code></pre>
 <h3 id="shorthand-for-method"><a name="shorthand-for-method" class="plugin-anchor" href="#shorthand-for-method"><i class="fa fa-link" aria-hidden="true"></i></a>[ES2015] メソッドの短縮記法 </h3>
 <p>先ほどの方法では、プロパティに関数を代入するという書き方になっていました。
@@ -1957,11 +2087,11 @@ ES2015からは、メソッドとしてプロパティを定義するための�
 <p>次のように、オブジェクトリテラルの中で <code>メソッド名(){ /*メソッドの処理*/ }</code> と書くことができます。</p>
 <p><a class="gitbook-plugin-js-console" aria-hidden="true"></a></p>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> obj = {
-    <span class="hljs-function"><span class="hljs-title">method</span>(<span class="hljs-params"></span>)</span> {
-        <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;this is method&quot;</span>;
+    <span class="hljs-title function_">method</span>(<span class="hljs-params"></span>) {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"this is method"</span>;
     }
 };
-<span class="hljs-built_in">console</span>.log(obj.method()); <span class="hljs-comment">// =&gt; &quot;this is method&quot;</span>
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(obj.<span class="hljs-title function_">method</span>()); <span class="hljs-comment">// =&gt; "this is method"</span>
 </code></pre>
 <p>この書き方はオブジェクトのメソッドだけではなく、クラスのメソッドと共通の書き方となっています。
 メソッドを定義する場合は、できるだけこの短縮記法に統一したほうがよいでしょう。</p>
@@ -1970,8 +2100,8 @@ ES2015からは、メソッドとしてプロパティを定義するための�
 <ul>
 <li>関数の宣言方法</li>
 <li>関数を値として使う方法</li>
-<li>コールバック関数</li>
 <li>関数式とArrow Function</li>
+<li>コールバック関数</li>
 <li>メソッドの定義方法</li>
 </ul>
 <p>基本的な関数の定義や値としての関数について学びました。
@@ -1979,15 +2109,16 @@ JavaScriptでは、非同期処理を扱うことが多く、その場合にコ�
 Arrow Functionを使うことで、コールバック関数を短く簡潔に書くことができます。</p>
 <p>JavaScriptでのメソッドは、オブジェクトのプロパティである関数のことです。
 ES2015からは、メソッドを定義する構文が追加されているため活用していきます。</p>
-
+</body></html>
                                 
+
                                 </section>
                             
                         </div>
                     </div>
                 
 <footer class="book_footer">
-    <p>Copyright (c) 2016-present <a href="https://github.com/asciidwango/js-primer">jsprimer project</a></p>
+    <p>Copyright (c) 2016-present <a href="https://github.com/asciidwango/js-primer" target="_blank">jsprimer project</a></p>
 </footer>
 
             </div>
@@ -2010,7 +2141,7 @@ ES2015からは、メソッドを定義する構文が追加されているた�
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"author":"azu","description":"JavaScriptの関数を定義する方法について紹介します。関数やメソッドを定義する方法として関数宣言、関数式、Arrow Functionについて紹介します。また関数の引数の扱い方や関数とメソッドの違いについても紹介します。","title":"関数と宣言","level":"1.3.8","depth":2,"next":{"title":"文と式","level":"1.3.9","depth":2,"path":"basic/statement-expression/README.md","ref":"./basic/statement-expression/README.md","articles":[]},"previous":{"title":"暗黙的な型変換","level":"1.3.7","depth":2,"path":"basic/implicit-coercion/README.md","ref":"./basic/implicit-coercion/README.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-search","-lunr","page-toc-button","include-codeblock","anchors","canonical-link","ga","js-console","github-issue-feedback"],"root":"./source/","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"docSearch":{"index":"83I8JIFICQ","apiKey":"9169ce4cd84fcf2376f29d9585c89254"},"github-issue-feedback":{"repo":"asciidwango/js-primer","label":"問題を報告する"},"fontsettings":{"theme":"white","family":"sans","size":2},"js-console":{},"canonical-link":{"baseURL":"https://jsprimer.net"},"highlight":{},"page-toc-button":{"maxTocDepth":2,"minTocSize":2},"ga":{"configuration":"auto","token":"UA-2184335-18"},"include-codeblock":{"check":false,"edit":false,"lang":"","fixlang":false,"template":"./resources/gitbook-plugin-include-codeblock.hbs","theme":"chrome","unindent":false},"edit-link":{"base":"https://github.com/asciidwango/js-primer/edit/master/source/","label":"Edit"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"anchors":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"IPAexMincho","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56},"embedFonts":false},"structure":{"langs":"LANGS.md","readme":"index.md","glossary":"GLOSSARY.md","summary":"README.md"},"variables":{"esversion":"2021","nodeversion":"14.15.0","npmversion":"6.14.8","triplebackticks":"```","console":"<a class=\"gitbook-plugin-js-console\" aria-hidden=\"true\"></a>"},"title":"JavaScript Primer #jsprimer","gitbook":">=3.0.0","description":"JavaScriptの基本的な書き方からアプリケーションの作成などのユースケースを学ぶための入門書です"},"file":{"path":"basic/function-declaration/README.md","mtime":"2022-05-24T13:58:12.725Z","type":"markdown"},"gitbook":{"version":"3.7.1","time":"2022-05-24T13:58:59.646Z"},"basePath":"../..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"author":"azu","description":"JavaScriptの関数を定義する方法について紹介します。関数やメソッドを定義する方法として関数宣言、関数式、Arrow Functionについて紹介します。また関数の引数の扱い方や関数とメソッドの違いについても紹介します。","sponsors":[],"title":"関数と宣言","level":"1.3.8","depth":2,"next":{"title":"文と式","level":"1.3.9","depth":2,"path":"basic/statement-expression/README.md","ref":"./basic/statement-expression/README.md","articles":[]},"previous":{"title":"暗黙的な型変換","level":"1.3.7","depth":2,"path":"basic/implicit-coercion/README.md","ref":"./basic/implicit-coercion/README.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-search","-lunr","page-toc-button","include-codeblock","anchors","canonical-link","js-console","github-issue-feedback","sandpack"],"root":"./source/","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"docSearch":{"index":"83I8JIFICQ","apiKey":"9169ce4cd84fcf2376f29d9585c89254"},"github-issue-feedback":{"repo":"asciidwango/js-primer","label":"問題を報告する"},"fontsettings":{"theme":"white","family":"sans","size":2},"js-console":{},"canonical-link":{"baseURL":"https://jsprimer.net"},"highlight":{},"page-toc-button":{"maxTocDepth":2,"minTocSize":2},"include-codeblock":{"check":false,"edit":false,"lang":"","fixlang":false,"template":"./resources/gitbook-plugin-include-codeblock.hbs","theme":"chrome","unindent":false},"sandpack":{},"edit-link":{"base":"https://github.com/asciidwango/js-primer/edit/master/source/","label":"Edit"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"anchors":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"IPAexMincho","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56},"embedFonts":false},"structure":{"langs":"LANGS.md","readme":"index.md","glossary":"GLOSSARY.md","summary":"README.md"},"variables":{"esversion":"2024","nodeversion":"22.7.0","npmversion":"10.8.2","triplebackticks":"```","console":"<a class=\"gitbook-plugin-js-console\" aria-hidden=\"true\"></a>"},"title":"JavaScript Primer #jsprimer","gitbook":">=3.0.0","description":"JavaScriptの基本的な書き方からアプリケーションの作成などのユースケースを学ぶための入門書です"},"file":{"path":"basic/function-declaration/README.md","mtime":"2025-04-29T08:02:37.232Z","type":"markdown"},"gitbook":{"version":"6.0.2","time":"2025-04-29T08:02:51.522Z"},"basePath":"../..","book":{"language":""}});
         });
     </script>
 </div>
@@ -2068,10 +2199,6 @@ ES2015からは、メソッドを定義する構文が追加されているた�
         
     
         
-        <script src="../../gitbook/gitbook-plugin-ga/plugin.js"></script>
-        
-    
-        
         <script src="../../gitbook/gitbook-plugin-js-console/console-ui.js"></script>
         
     
@@ -2080,7 +2207,11 @@ ES2015からは、メソッドを定義する構文が追加されているた�
         
     
         
-        <script src="../../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        <script src="../../gitbook/honkit-plugin-sandpack/honkit-plugin-sandpack.js"></script>
+        
+    
+        
+        <script src="../../gitbook/@honkit/honkit-plugin-fontsettings/fontsettings.js"></script>
         
     
 
